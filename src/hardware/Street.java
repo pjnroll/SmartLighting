@@ -13,41 +13,17 @@ public class Street implements Iterable<StreetLamp> {
 
     private int id;
     private String name;
-    private int nStreetLamps;
-    //private List<StreetLamp> streetLamps;
     private StreetLamp first;
     private StreetLamp last;
 
     public Street(String name) {
         this.name = name == null ? "" : name;
-        this.nStreetLamps = nStreetLamps;
         id = count;
         count++;
 
         first = null;
         last = null;
-        //streetLamps = new LinkedList<>();
     }
-
-    /*public void addStreetLamp(StreetLamp sl) throws StreetContainsLampException, StreetFullException {
-        boolean full = isFull();
-        boolean contains = streetLamps.contains(sl);
-        if (!full && !contains) {
-            if (isEmpty()) {
-                streetLamps.add(sl);
-                streetLamps.get(0).addPrevStreetLamp(null);
-            } else {
-                streetLamps.get(streetLamps.size()-1).addNextStreetLamp(sl);
-
-            }
-        }
-        else if (!full)
-            throw new StreetContainsLampException(sl.getId());
-        else if (!contains)
-            throw new StreetFullException();
-        else
-            System.err.println("My god");
-    }*/
 
     public void addStreetLamp(StreetLamp sl) throws StreetLampException {
         if (sl != null) {
@@ -76,7 +52,11 @@ public class Street implements Iterable<StreetLamp> {
 
 
     public int getnStreetLamps() {
-        return nStreetLamps;
+        int n = 0;
+        for (Iterator<StreetLamp> it = iterator(); it.hasNext(); it.next())
+            n++;
+
+        return n;
     }
 
     /*private boolean isFull(){
@@ -88,14 +68,39 @@ public class Street implements Iterable<StreetLamp> {
     }*/
 
     public String toString() {
-        String s = "";
         //s += streetLamps;
 
-        return s;
+        return "";
     }
 
     @Override
     public Iterator<StreetLamp> iterator() {
-        Iterable<StreetLamp> it =
+
+        return new Iterator<>() {
+            @Override
+            public boolean hasNext() {
+                boolean has = false;
+                if (first != null && last != null) {
+                    if (first == last) {
+                        has = true;
+                    }
+                }
+
+                return has;
+            }
+
+            @Override
+            public StreetLamp next() {
+                StreetLamp toRet = null;
+                if (first != null && last != null) {
+                    if (first == last) {
+                        toRet = last;
+                    } else {
+                        toRet = last.getNext();
+                    }
+                }
+                return toRet;
+            }
+        };
     }
 }
