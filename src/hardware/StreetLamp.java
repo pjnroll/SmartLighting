@@ -68,10 +68,10 @@ public class StreetLamp {
         setIntensity(intensity);*/
 
         Street.currentSLNext = Street.currentSLNext.getNext();
-        if (intensity > 20) {
-            Street.currentSLNext.setIntensity(intensity);
-            if (Street.currentSLNext.getNext() != null)
+        if (Street.currentSLNext.getNext() != null)
                 sendToNextStreetLamp(intensity - 20);
+            if (intensity > 20) {
+                Street.currentSLNext.setIntensity(intensity);
         }
     }
 
@@ -79,7 +79,7 @@ public class StreetLamp {
         Street.currentSLPrev = Street.currentSLPrev.getPrev();
         if (intensity >= 20) {
             Street.currentSLPrev.setIntensity(intensity);
-            if (Street.currentSLPrev.getPrev() != null)
+            if (Street.currentSLPrev.getPrev() != null && intensity > 20)
                 sendToPrevStreetLamp(intensity - 20);
         }
 

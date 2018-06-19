@@ -46,11 +46,15 @@ public class Street {
         currentSLPrev = currentStreetLight;
     }
 
+    public LinkedList<StreetLamp> getStreet() {
+        return street;
+    }
+
     public String toString() {
         StringBuilder s = new StringBuilder();
         for (StreetLamp aStreet : street) {
             if (aStreet.getIntensity() == 100)
-                s.append("XX").append(" ");
+                s.append("XX ");
             else
                 s.append(aStreet.getIntensity()).append(" ");
         }
