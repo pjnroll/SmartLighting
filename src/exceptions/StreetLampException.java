@@ -2,6 +2,6 @@ package exceptions;
 
 public class StreetLampException extends Exception {
     public StreetLampException() {
-        super("There is and error with the street lamps.");
+        super("There is an error with the street lamps.");
     }
 }

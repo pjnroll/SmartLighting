@@ -1,106 +1,45 @@
 package hardware;
 
-import exceptions.StreetContainsLampException;
-import exceptions.StreetFullException;
-import exceptions.StreetLampException;
-
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 
-public class Street implements Iterable<StreetLamp> {
-    private static int count = 0;
+public class Street {
+    private static int count_id = 0;
+    private int cont;
+
+    private StreetLamp currentSL;
 
     private int id;
     private String name;
-    private StreetLamp first;
-    private StreetLamp last;
+    private LinkedList<StreetLamp> street;
+
+    public Street() {
+        this("Street" + count_id);
+    }
 
     public Street(String name) {
-        this.name = name == null ? "" : name;
-        id = count;
-        count++;
+        this.name = name;
+        this.id = count_id;
+        count_id++;
 
-        first = null;
-        last = null;
+        cont = 0;
+
+        currentSL = null;
+        street = new LinkedList<>();
     }
 
-    public void addStreetLamp(StreetLamp sl) throws StreetLampException {
-        if (sl != null) {
-            if (first == null && last == null) {
-                // Street just created, there are no street lamps
-                first = sl;
-                last = sl;
-
-                first.addPrevStreetLamp(null);
-                first.addNextStreetLamp(last);
-                last.addPrevStreetLamp(first);
-                last.addNextStreetLamp(null);
-
-                sl.addPrevStreetLamp(null);
-                sl.addNextStreetLamp(null);
-            } else if (first != null && last != null) {
-                StreetLamp temp = last;
-                last = sl;
-                last.addPrevStreetLamp(temp);
-                last.addNextStreetLamp(null);
-            } else {
-                throw new StreetLampException();
-            }
-        }
+    public void addStreetLamp(StreetLamp sl) {
+        street.add(sl);
     }
-
-
-    public int getnStreetLamps() {
-        int n = 0;
-        for (Iterator<StreetLamp> it = iterator(); it.hasNext(); it.next())
-            n++;
-
-        return n;
-    }
-
-    /*private boolean isFull(){
-        return streetLamps.size() >= getnStreetLamps();
-    }
-
-    private boolean isEmpty() {
-        return streetLamps.size() == 0;
-    }*/
 
     public String toString() {
-        //s += streetLamps;
+        StringBuilder s = new StringBuilder();
+        System.out.println("NEL TO STRING");
+        for (Iterator<StreetLamp> it = street.iterator(); it.hasNext();) {
+            System.out.println("CISONO");
+            s.append(it.next());
+        }
 
-        return "";
-    }
-
-    @Override
-    public Iterator<StreetLamp> iterator() {
-
-        return new Iterator<>() {
-            @Override
-            public boolean hasNext() {
-                boolean has = false;
-                if (first != null && last != null) {
-                    if (first == last) {
-                        has = true;
-                    }
-                }
-
-                return has;
-            }
-
-            @Override
-            public StreetLamp next() {
-                StreetLamp toRet = null;
-                if (first != null && last != null) {
-                    if (first == last) {
-                        toRet = last;
-                    } else {
-                        toRet = last.getNext();
-                    }
-                }
-                return toRet;
-            }
-        };
+        return s.toString();
     }
 }

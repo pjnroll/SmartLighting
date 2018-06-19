@@ -66,9 +66,14 @@ public class StreetLamp {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        return obj instanceof StreetLamp && ((StreetLamp) obj).getId() == getId();
+    }
+
+    @Override
     public String toString() {
         String s = "";
-        s += getId() + ":" + getIntensity();
+        s += getId() + ":" + getIntensity() + " ";
 
         return s;
     }
