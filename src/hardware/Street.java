@@ -7,7 +7,8 @@ public class Street {
     private static int count_id = 0;
     private int cont;
 
-    private StreetLamp currentSL;
+    public static StreetLamp currentSLNext;
+    public static StreetLamp currentSLPrev;
 
     private int id;
     private String name;
@@ -24,22 +25,37 @@ public class Street {
 
         cont = 0;
 
-        currentSL = null;
+        currentSLNext = null;
         street = new LinkedList<>();
     }
 
     public void addStreetLamp(StreetLamp sl) {
-        street.add(sl);
+        if (street.size() == 0) {
+            street.addFirst(sl);
+            street.addLast(sl);
+        } else {
+            StreetLamp temp = street.getLast();
+            street.addLast(sl);
+            street.getLast().addPrevStreetLamp(temp);
+            temp.addNextStreetLamp(sl);
+        }
+    }
+
+    public void setCurrentStreetLight(StreetLamp currentStreetLight) {
+        currentSLNext = currentStreetLight;
+        currentSLPrev = currentStreetLight;
     }
 
     public String toString() {
         StringBuilder s = new StringBuilder();
-        System.out.println("NEL TO STRING");
-        for (Iterator<StreetLamp> it = street.iterator(); it.hasNext();) {
-            System.out.println("CISONO");
-            s.append(it.next());
+        for (StreetLamp aStreet : street) {
+            if (aStreet.getIntensity() == 100)
+                s.append("XX").append(" ");
+            else
+                s.append(aStreet.getIntensity()).append(" ");
         }
 
         return s.toString();
     }
+
 }
