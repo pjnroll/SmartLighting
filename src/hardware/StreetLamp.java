@@ -1,9 +1,11 @@
 package hardware;
 
 import exceptions.IntensityOutOfBoundException;
+import helper.Intensity;
 
 public class StreetLamp {
     private final static int MIN_INTENSITY = 0;     // Guard value
+    private final static int BASE_INTENSITY = 24;   // Guard value
     private final static int MAX_INTENSITY = 100;   // Guard value
 
     private static int count = 0;
@@ -12,6 +14,8 @@ public class StreetLamp {
 
     private StreetLamp next;    // Reference to the next Street Lamp
     private StreetLamp prev;    // Reference to the prev Street Lamp
+
+    private int[] intensities = Intensity.getIntensitiesInt();
 
     //TODO transorm it into a builder factory (o come cazzo si chiama) if you want
     public StreetLamp(int intensity) throws IntensityOutOfBoundException {
@@ -37,10 +41,10 @@ public class StreetLamp {
     private void sendToNextStreetLamp(int intensity) {
         Street.currentSLNext = Street.currentSLNext.getNext();
         assert Street.currentSLNext != null;
-        if (intensity >= 20) {
+        if (intensity >= BASE_INTENSITY) {
             Street.currentSLNext.setIntensity(intensity);
-            if (Street.currentSLNext.getNext() != null && intensity > 20)
-                sendToNextStreetLamp(intensity - 20);
+            if (Street.currentSLNext.getNext() != null && intensity > BASE_INTENSITY)
+                sendToNextStreetLamp(intensity - 20);   // TODO indice successivo!
         }
     }
 
@@ -50,10 +54,10 @@ public class StreetLamp {
      */
     private void sendToPrevStreetLamp(int intensity) {
         Street.currentSLPrev = Street.currentSLPrev.getPrev();
-        if (intensity >= 20) {
+        if (intensity >= BASE_INTENSITY) {
             Street.currentSLPrev.setIntensity(intensity);
-            if (Street.currentSLPrev.getPrev() != null && intensity > 20)
-                sendToPrevStreetLamp(intensity - 20);
+            if (Street.currentSLPrev.getPrev() != null && intensity > BASE_INTENSITY)
+                sendToPrevStreetLamp(intensity - 20);   // TODO indice precedente!
         }
     }
 
@@ -106,19 +110,19 @@ public class StreetLamp {
      */
     public void sensorDetected() {
         Street.currentSLPrev = this;
-        Street.currentSLPrev.setIntensity(100);
+        Street.currentSLPrev.setIntensity(intensities[6]);
         if (Street.currentSLPrev.getPrev() != null)
-            sendToPrevStreetLamp(80);
+            sendToPrevStreetLamp(intensities[5]);
 
 
         Street.currentSLNext = this;
         // Turn on 3 street lamps
-        Street.currentSLNext.setIntensity(100);
+        Street.currentSLNext.setIntensity(intensities[6]);
         for (int i = 0; i < 2 && Street.currentSLNext.getNext() != null; i++) {
             Street.currentSLNext = Street.currentSLNext.getNext();
-            Street.currentSLNext.setIntensity(100);
+            Street.currentSLNext.setIntensity(intensities[6]);
         }
         if (Street.currentSLNext.getNext() != null)
-            sendToNextStreetLamp(80);
+            sendToNextStreetLamp(intensities[5]);
     }
 }
