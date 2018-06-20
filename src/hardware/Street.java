@@ -1,11 +1,9 @@
 package hardware;
 
-import java.util.Iterator;
 import java.util.LinkedList;
 
 public class Street {
     private static int count_id = 0;
-    private int cont;
 
     public static StreetLamp currentSLNext;
     public static StreetLamp currentSLPrev;
@@ -23,15 +21,13 @@ public class Street {
         this.id = count_id;
         count_id++;
 
-        cont = 0;
-
         currentSLNext = null;
         street = new LinkedList<>();
     }
 
     public void addStreetLamp(StreetLamp sl) {
         if (street.size() == 0) {
-            street.addFirst(sl);
+            //street.addFirst(sl);
             street.addLast(sl);
         } else {
             StreetLamp temp = street.getLast();
@@ -52,6 +48,7 @@ public class Street {
 
     public String toString() {
         StringBuilder s = new StringBuilder();
+        s.append(name).append(": ");
         for (StreetLamp aStreet : street) {
             if (aStreet.getIntensity() == 100)
                 s.append("XX ");
