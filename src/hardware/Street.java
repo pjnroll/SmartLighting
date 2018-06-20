@@ -1,5 +1,7 @@
 package hardware;
 
+import helper.Intensity;
+
 import java.util.LinkedList;
 
 public class Street {
@@ -50,7 +52,7 @@ public class Street {
         StringBuilder s = new StringBuilder();
         s.append(name).append(": ");
         for (StreetLamp aStreet : street) {
-            if (aStreet.getIntensity() == 100)
+            if (aStreet.getIntensity().compareTo(Intensity.INTENSITY_6) == 0)
                 s.append("XX ");
             else
                 s.append(aStreet.getIntensity()).append(" ");
@@ -58,5 +60,4 @@ public class Street {
 
         return s.toString();
     }
-
 }
