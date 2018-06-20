@@ -23,11 +23,20 @@ public class Test {
             mStreet.addStreetLamp(streetLamp);
         }
 
-        for (int i = ran.nextInt(N_STREETLAMPS); i < N_STREETLAMPS; i++) {
-            mStreet.setCurrentStreetLight(streetLamps[i]);
-            streetLamps[i].sensorDetected();
-            System.out.println(mStreet);
+        for (int k = 0; k < 3; k++) {
+            int time = ran.nextInt(1000);
+            for (int i = 0; i < N_STREETLAMPS; i++) {
+                mStreet.setCurrentStreetLight(streetLamps[i]);
+                streetLamps[i].sensorDetected();
+                System.out.println((1000-time) + "km/h: " + mStreet);
 
+                try {
+                    Thread.sleep(time);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            System.out.flush();
         }
     }
 }

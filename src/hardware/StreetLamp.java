@@ -15,6 +15,9 @@ public class StreetLamp {
     private StreetLamp next;    // Reference to the next Street Lamp
     private StreetLamp prev;    // Reference to the prev Street Lamp
 
+    private int indexNext;
+    private int indexPrev;
+
     private int[] intensities = Intensity.getIntensitiesInt();
 
     //TODO transorm it into a builder factory (o come cazzo si chiama) if you want
@@ -43,8 +46,10 @@ public class StreetLamp {
         assert Street.currentSLNext != null;
         if (intensity >= BASE_INTENSITY) {
             Street.currentSLNext.setIntensity(intensity);
-            if (Street.currentSLNext.getNext() != null && intensity > BASE_INTENSITY)
-                sendToNextStreetLamp(intensity - 20);   // TODO indice successivo!
+            if (Street.currentSLNext.getNext() != null && intensity > BASE_INTENSITY) {
+                indexNext--;
+                sendToNextStreetLamp(intensities[indexNext]);
+            }
         }
     }
 
@@ -56,8 +61,10 @@ public class StreetLamp {
         Street.currentSLPrev = Street.currentSLPrev.getPrev();
         if (intensity >= BASE_INTENSITY) {
             Street.currentSLPrev.setIntensity(intensity);
-            if (Street.currentSLPrev.getPrev() != null && intensity > BASE_INTENSITY)
-                sendToPrevStreetLamp(intensity - 20);   // TODO indice precedente!
+            if (Street.currentSLPrev.getPrev() != null && intensity > BASE_INTENSITY) {
+                indexPrev--;
+                sendToPrevStreetLamp(intensities[indexPrev]);
+            }
         }
     }
 
@@ -109,20 +116,27 @@ public class StreetLamp {
      * the previous Street Lamps and goes on to the next ones
      */
     public void sensorDetected() {
-        Street.currentSLPrev = this;
-        Street.currentSLPrev.setIntensity(intensities[6]);
-        if (Street.currentSLPrev.getPrev() != null)
-            sendToPrevStreetLamp(intensities[5]);
+        indexPrev = 6;
 
+        Street.currentSLPrev = this;
+        Street.currentSLPrev.setIntensity(intensities[indexPrev]);
+        if (Street.currentSLPrev.getPrev() != null) {
+            indexPrev--;
+            sendToPrevStreetLamp(intensities[indexPrev]);
+        }
+
+        indexNext = 6;
 
         Street.currentSLNext = this;
         // Turn on 3 street lamps
-        Street.currentSLNext.setIntensity(intensities[6]);
+        Street.currentSLNext.setIntensity(intensities[indexNext]);
         for (int i = 0; i < 2 && Street.currentSLNext.getNext() != null; i++) {
             Street.currentSLNext = Street.currentSLNext.getNext();
-            Street.currentSLNext.setIntensity(intensities[6]);
+            Street.currentSLNext.setIntensity(intensities[indexNext]);
         }
-        if (Street.currentSLNext.getNext() != null)
-            sendToNextStreetLamp(intensities[5]);
+        if (Street.currentSLNext.getNext() != null) {
+            indexNext--;
+            sendToNextStreetLamp(intensities[indexNext]);
+        }
     }
 }

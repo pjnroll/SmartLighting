@@ -2,7 +2,7 @@ package hardware;
 
 import java.util.LinkedList;
 
-public class Street {
+public class Street extends Thread {
     private static int count_id = 0;
 
     public static StreetLamp currentSLNext;
@@ -59,4 +59,10 @@ public class Street {
         return s.toString();
     }
 
+    @Override
+    public void run() {
+        if (street != null && street.size() > 0) {
+
+        }
+    }
 }
