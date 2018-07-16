@@ -1,6 +1,7 @@
 package test;
 
 import exceptions.IntensityOutOfBoundException;
+import hardware.Car;
 import hardware.Sensor;
 import hardware.Street;
 import hardware.StreetLamp;
@@ -9,6 +10,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Random;
 
 public class Test implements Runnable {
@@ -18,18 +21,35 @@ public class Test implements Runnable {
     private Street mStreet;
     private StreetLamp[] streetLamps;
 
-    private int[] startingValues;
-    private int[] outputValues;
+    /*private int[] firstOutputs;*/
+    private int[] intensities;  // Output array with the intensities to assign at each lamppost
+
+    private int[] input;        // Array of sensors' values always up to date. They probably represent the cars' velocity
+    private int[] dumped;       // Last stored situation of the sensors' values. It's used to be compared with input array,
+                                // to figure out if there is a new detection
+
+    private int inputValue;
+
+    private int time;           // The time that the car (should) spend to reach the next sensor
 
     private Thread prOS;
 
+    private boolean isDetected; // When a sensor detect a new car, it becomes true;
+    private boolean isHandled;  // When the system successfully change the intensity of a lamppost, whose sensor detects
+                                // a car, it becomes true and the control comes back to the main system
+
+    private int sensorDetected; // The sensor id that detects a car
+
     public Test() {
+        input = new int[N_STREETLAMPS];
+        dumped = new int[N_STREETLAMPS];
+
+        // Creo la strada
         mStreet = new Street("Via Orabona");
         streetLamps = new StreetLamp[N_STREETLAMPS];
-        startingValues = new int[N_STREETLAMPS];
-        outputValues = new int[N_STREETLAMPS];
+        intensities = new int[N_STREETLAMPS];
 
-        System.out.println("CI sentro");
+        // Creo i lampioni
         for (int i = 0; i < N_STREETLAMPS; i++) {
             try {
                 streetLamps[i] = new StreetLamp(INTENSITY_BASE);
@@ -38,60 +58,36 @@ public class Test implements Runnable {
             }
         }
 
+        // Aggiungo i lampioni alla strada
         for (StreetLamp streetLamp : streetLamps) {
             mStreet.addStreetLamp(streetLamp);
         }
 
-        for (int i = 0; i < startingValues.length; i++) {
-            startingValues[i] = 20;
-        }
+        Arrays.fill(intensities, 20);
 
-        prOS = Thread.currentThread();
+        System.out.println(mStreet.toString());
+
+        prOS = new Thread(this, "prOS Thread");
+        prOS.start();
 
         new Sensor();   // Start every sensor
+
+
+    }
+
+    public int[] generateIntensities(int position, int[] output) {
+        int[] toRet = new int[output.length];
+
+        Arrays.fill(toRet, 20);
+
         try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void main(String... args) {
-        //TODO Rembember to handle the exceptions
-
-        new Test();
-        /*
-         * No sensors detected
-         *
-        for (int i = 0; i < N_STREETLAMPS; i++) {
-            sensorsDetected[i] = 0;
-        }*/
-
-        /*for (int k = 0; k < 3; k++) {
-            int time = ran.nextInt(1000);
-            for (int i = 0; i < N_STREETLAMPS; i++) {
-                mStreet.setCurrentStreetLight(streetLamps[i]);
-                streetLamps[i].sensorDetected();
-                try {
-                    Thread.sleep(time);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                System.out.println(mStreet);
-            }
-            System.out.flush();
-        }*/
-    }
-
-    public int[] generateIntensities(int detectedValue, int[] sensorsValues) {
-        int[] toRet = new int[sensorsValues.length];
-
-        for (int i = detectedValue; i < sensorsValues.length; i++) {
-            toRet[i] = 100;
-            toRet[i+1] = 100;
-            toRet[1+2] = 80;
-            toRet[1+3] = 60;
-            toRet[1+4] = 40;
+            toRet[position] = 100;
+            toRet[position + 1] = 100;
+            toRet[position + 2] = 80;
+            toRet[position + 3] = 60;
+            toRet[position + 4] = 40;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.err.println("Index out of bound");
         }
 
         return toRet;
@@ -99,109 +95,91 @@ public class Test implements Runnable {
 
     @Override
     public void run() {
-
+        while (true) {
+            update();
+        }
     }
 
-    public class Sensor implements KeyListener, Runnable {
-        private final static int N_STREETLAMPS = 20;
-        private int detectedValue;
+    public void update() {
+        // Se c'è un aggiornamento;
+        // ci sarà un aggiornamento quando lo stato attuale dei sensori
+        // è diverso da quello precedente
+        if (!Arrays.equals(input, dumped)) {
+            dumped = Arrays.copyOf(input, input.length);
+            intensities = generateIntensities(sensorDetected, dumped);
 
-        private boolean detected;
-        private boolean handled;
+            // Assegno le nuove intensità ai lampioni
+            int k = 0;
+            for (StreetLamp streetLamp : mStreet.getStreetLamps()) {
+                streetLamp.setIntensity(intensities[k]);
+                k++;
+            }
+            isHandled = true;
+            System.out.println(mStreet);
+        }
+    }
+
+    public static void main(String... args) {
+        //TODO Remember to handle the exceptions
+        new Test();
+    }
+
+    public class Sensor implements Runnable {
+        private final static int N_STREETLAMPS = 20;
 
         private Thread myThread;
 
-        private int[] sensorsValues = new int[N_STREETLAMPS];
-        private int sensorDetected;
-
-        private int time;
-
         Sensor() {
-            detected = false;
-            handled = false;
+            isDetected = false;
+            isHandled = false;
 
             time = 0;
 
-            /**
-             * No sensors detected
-             */
-            for (int i = 0; i < N_STREETLAMPS; i++) {
-                sensorsValues[i] = 0;
-            }
+
+            //  No sensors detected
+            Arrays.fill(input, 0);
+            Arrays.fill(dumped, 0);
 
             myThread = new Thread(this, "SensorThread");
-            //myThread.start();
-        }
+            myThread.start();
 
-        @Override
-        public void keyPressed(KeyEvent e) {
-            if (e.getKeyCode() == KeyEvent.VK_E) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e1) {
-                    e1.printStackTrace();
-                }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
 
-            if (e.getKeyCode() == KeyEvent.VK_S) {
-                Random ran = new Random();
-
-                sensorDetected = 0; // ran.nextInt(N_STREETLAMPS);
-                detectedValue = ran.nextInt(81) + 50;
-                sensorsValues[sensorDetected] = detectedValue;
-
-                // calcola il tempo
-                time = (35*36)/(detectedValue * 10) * 100;
-                detected = true;
-
-                try {
-                    myThread.join();
-                } catch (InterruptedException e1) {
-                    e1.printStackTrace();
-                }
-
-
-                detected = false;
-
-            /* sensore rilevato
             Random ran = new Random();
 
+            sensorDetected = 0;
+            inputValue = ran.nextInt(81) + 50;
 
-            /**
-             * Mi interessa una velocità compresa tra 50 km/h e 130 km/h, quindi
-             * genero un numero casuale tra 0 e 80 (compresi) e aggiungo 50
-             *
-            int velocity = ran.nextInt(81) + 50;*/
-            }
-        }
+            //  Calcola il tempo che l'auto impiega ad arrivare al sensore successivo
+            time = ((35 * 36) / (inputValue * 10)) * 100;
 
-        @Override
-        public void run() {
-            while (detected && !handled) {
-                outputValues = generateIntensities(detectedValue, sensorsValues);
-
-                for (int i = 0; i < streetLamps.length; i++) {
-                    streetLamps[i].setIntensity(outputValues[i]);
-                }
+            while (sensorDetected <= 15) {
+                input[sensorDetected] = inputValue;
+                isDetected = true;
 
                 try {
                     Thread.sleep(time);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                handled = true;
+                input[sensorDetected] = 0;
+                sensorDetected += 1;
             }
         }
 
         @Override
-        public void keyReleased(KeyEvent e) {
-
+        public void run() {
+            while (true) {
+                while (isDetected && !isHandled) {
+                    prOS.run();
+                }
+                break;
+            }
         }
 
-        @Override
-        public void keyTyped(KeyEvent e) {
-
-        }
     }
-
 }
