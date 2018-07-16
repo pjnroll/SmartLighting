@@ -10,7 +10,7 @@ public class Street extends Thread {
 
     private int id;
     private String name;
-    private LinkedList<StreetLamp> street;
+    private LinkedList<StreetLamp> streetLamps;
 
     public Street() {
         this("Street" + count_id);
@@ -22,17 +22,17 @@ public class Street extends Thread {
         count_id++;
 
         currentSLNext = null;
-        street = new LinkedList<>();
+        streetLamps = new LinkedList<>();
     }
 
     public void addStreetLamp(StreetLamp sl) {
-        if (street.size() == 0) {
-            //street.addFirst(sl);
-            street.addLast(sl);
+        if (streetLamps.size() == 0) {
+            //streetLamps.addFirst(sl);
+            streetLamps.addLast(sl);
         } else {
-            StreetLamp temp = street.getLast();
-            street.addLast(sl);
-            street.getLast().addPrevStreetLamp(temp);
+            StreetLamp temp = streetLamps.getLast();
+            streetLamps.addLast(sl);
+            streetLamps.getLast().addPrevStreetLamp(temp);
             temp.addNextStreetLamp(sl);
         }
     }
@@ -42,14 +42,14 @@ public class Street extends Thread {
         currentSLPrev = currentStreetLight;
     }
 
-    public LinkedList<StreetLamp> getStreet() {
-        return street;
+    public LinkedList<StreetLamp> getStreetLamps() {
+        return streetLamps;
     }
 
     public String toString() {
         StringBuilder s = new StringBuilder();
         s.append(name).append(": ");
-        for (StreetLamp aStreet : street) {
+        for (StreetLamp aStreet : streetLamps) {
             if (aStreet.getIntensity() == 100)
                 s.append("XX ");
             else
@@ -61,7 +61,7 @@ public class Street extends Thread {
 
     @Override
     public void run() {
-        if (street != null && street.size() > 0) {
+        if (streetLamps != null && streetLamps.size() > 0) {
 
         }
     }
